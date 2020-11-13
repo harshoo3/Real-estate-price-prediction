@@ -13,7 +13,7 @@ typedef Eigen::VectorXf ColVector;
 class NeuralNetwork { 
 public: 
     // constructor
-    NeuralNetwork(vector<uint> layer_dims, Scalar learningRate = Scalar(5)); 
+    NeuralNetwork(vector<int> layer_dims, Scalar learningRate = Scalar(0.005)); 
   
     // function for forward propagation of data 
     void propagateForward(RowVector& input); 
@@ -28,8 +28,9 @@ public:
     void updateWeights(); 
   
     // function to train the neural network give an array of data points 
-    void train(vector<RowVector*> input_data,vector<RowVector*> output_data); 
+    void train(vector<RowVector> &input_data,vector<RowVector> &output_data,vector<RowVector> &test_input,vector<RowVector> &test_output,int num_epochs); 
   
+    void predict(vector<RowVector> &test_input,vector<RowVector> &test_output);
     // storage objects for working of neural network 
     /* 
           use pointers when using std::vector<Class> as std::vector<Class> calls destructor of  
@@ -41,6 +42,6 @@ public:
     vector<RowVector*> cacheLayers; // stores the unactivated (activation fn not yet applied) values of layers 
     vector<RowVector*> deltas; // stores the error contribution of each neurons 
     vector<Matrix*> weights; // the connection weights itself 
-    vector<uint> layer_dims;
+    vector<int> layer_dims;
     Scalar learningRate; 
 }; 

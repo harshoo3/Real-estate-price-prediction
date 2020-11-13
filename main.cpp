@@ -120,6 +120,25 @@ int main()
                 vec2.push_back(t);
             }
         }
+        float min1 = *min_element(vec1.begin(), vec1.end());
+        float min2 = *min_element(vec2.begin(), vec2.end());
+        float max1 = *max_element(vec1.begin(), vec1.end());
+        float max2 = *max_element(vec2.begin(), vec2.end());
+        float denom1=max1-min1;
+        float denom2=max2-min2;
+        for(int j=0;j<m;j++)
+        {
+            if(j<1500)
+            {
+                vec1[j]=(vec1[j]-min1)/denom1;
+                // cout<<vec1[j]<<" ";
+            }
+            else
+            {
+                vec2[j-1500]=(vec2[j-1500]-min2)/denom2;
+                // cout<<vec2[j-1500]<<" ";
+            }
+        }
         train_data.push_back(make_pair(raw_train_data[i].first,vec1));
         test_data.push_back(make_pair(raw_train_data[i].first,vec2));
         // cout<<endl<<endl;
@@ -129,22 +148,37 @@ int main()
     int m_test=test_data[0].second.size();
     cout<<m_train<<" "<<m_test<<endl;
     
-    vector<RowVector*> X_train,Y_train;
-    for(int j=0;j<m;j++)
+    vector<RowVector> X_train,Y_train,X_test,Y_test;
+    for(int j=0;j<m_train;j++)
     {
         RowVector temp1(n),temp2(1);
         temp2(0)=train_data[0].second[j];
-        Y_train.push_back(&temp2);
+        Y_train.push_back(temp2);
         for(int i=1;i<=n;i++)
         {
             temp1(i-1)=train_data[i].second[j];
             // cout<<train_data[i].second[j]<<" ";
             // cout<<temp1(i-1)<<" ";
         }
-        X_train.push_back(&temp1);
+        X_train.push_back(temp1);
         // cout<<endl<<endl;
     }
     cout<<X_train.size()<<endl;
+    for(int j=0;j<m_test;j++)
+    {
+        RowVector temp1(n),temp2(1);
+        temp2(0)=test_data[0].second[j];
+        Y_test.push_back(temp2);
+        for(int i=1;i<=n;i++)
+        {
+            temp1(i-1)=test_data[i].second[j];
+            // cout<<train_data[i].second[j]<<" ";
+            // cout<<temp1(i-1)<<" ";
+        }
+        X_test.push_back(temp1);
+        // cout<<endl<<endl;
+    }
+    cout<<X_test.size()<<endl;
     // for(int i=0;i<=n;i++)
     // {
     //     for(int j=0;j<m;j++)
@@ -153,10 +187,10 @@ int main()
     //         cout<<temp1(i)<<" ";
     //     }
     // }
-    NeuralNetwork NN({ n,3,2,1});
-    // int num_epochs=100;
-    NN.train(X_train,Y_train);
-
+    NeuralNetwork NN({ n,30,25,20,15,12,10,7,5,3,1});
+    int num_epochs=7;
+    NN.train(X_train,Y_train,X_test,Y_test,num_epochs);
+    cout<<m_train<<" "<<m_test<<endl;
 
     // pair<string, vector<int>> Y_train = train_data[0];
     // vector<pair<string, vector<int>>> X_train;

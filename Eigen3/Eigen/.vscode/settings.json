@@ -69,6 +69,15 @@
         "matrixfunctions": "cpp",
         "nonlinearoptimization": "cpp",
         "polynomials": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "cfenv": "cpp",
+        "charconv": "cpp",
+        "codecvt": "cpp",
+        "csetjmp": "cpp",
+        "csignal": "cpp",
+        "cuchar": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "scoped_allocator": "cpp"
     }
 }
