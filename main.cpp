@@ -106,6 +106,7 @@ int main()
     rand_shuffle(m,temp);
     for(int i=0;i<n+1;i++)
     {
+
         vector<float>vec1,vec2;
         for(int j=0;j<m;j++)
         {
@@ -188,11 +189,11 @@ int main()
     //     }
     // }
     NeuralNetwork NN({ n,30,25,20,15,12,10,7,5,3,1});
-    int num_epochs=7;
+    int num_epochs=6;
     NN.train(X_train,Y_train,X_test,Y_test,num_epochs);
     cout<<m_train<<" "<<m_test<<endl;
-
     // pair<string, vector<int>> Y_train = train_data[0];
+    
     // vector<pair<string, vector<int>>> X_train;
     // int n=train_data.size()-1;
     // for(int i=1;i<=n;i++)

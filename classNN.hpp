@@ -13,7 +13,7 @@ typedef Eigen::VectorXf ColVector;
 class NeuralNetwork { 
 public: 
     // constructor
-    NeuralNetwork(vector<int> layer_dims, Scalar learningRate = Scalar(0.005)); 
+    NeuralNetwork(vector<int> layer_dims, Scalar learningRate = Scalar(0.008)); 
   
     // function for forward propagation of data 
     void propagateForward(RowVector& input); 
@@ -44,4 +44,5 @@ public:
     vector<Matrix*> weights; // the connection weights itself 
     vector<int> layer_dims;
     Scalar learningRate; 
+    // vector<RowVector>train_costs,test_costs;
 }; 
