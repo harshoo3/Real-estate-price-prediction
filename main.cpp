@@ -92,14 +92,12 @@ void rand_shuffle(int m,int *temp)
 typedef vector<RowVector*> data; 
 int main() 
 { 
-    // data in_dat, out_dat; 
-    // genData("..\Real-Estate\Files\analytical_base_table.csv"); 
-    // vector<Matrix*>  train_data=load_csv("analytical_base_table.csv"); 
-    // MatrixXd A = load_csv<MatrixXd>("analytical_base_table.csv");
+    
 
     vector<pair<string, vector<float>>> raw_train_data = read_csv("analytical_base_table.csv"),test_data,train_data;
     int n=raw_train_data.size()-1;
     int m=raw_train_data[0].second.size();
+    float max1,max2,min1,min2,denom1,denom2;
     // cout<<raw_train_data[15].second[0];
     cout<<n<<" "<<m<<endl;
     int temp[m];
@@ -121,12 +119,12 @@ int main()
                 vec2.push_back(t);
             }
         }
-        float min1 = *min_element(vec1.begin(), vec1.end());
-        float min2 = *min_element(vec2.begin(), vec2.end());
-        float max1 = *max_element(vec1.begin(), vec1.end());
-        float max2 = *max_element(vec2.begin(), vec2.end());
-        float denom1=max1-min1;
-        float denom2=max2-min2;
+        min1 = *min_element(vec1.begin(), vec1.end());
+        min2 = *min_element(vec2.begin(), vec2.end());
+        max1 = *max_element(vec1.begin(), vec1.end());
+        max2 = *max_element(vec2.begin(), vec2.end());
+        denom1=max1-min1;
+        denom2=max2-min2;
         for(int j=0;j<m;j++)
         {
             if(j<1500)
@@ -144,6 +142,7 @@ int main()
         test_data.push_back(make_pair(raw_train_data[i].first,vec2));
         // cout<<endl<<endl;
     }
+    cout<<max1<<" "<<max2<<" "<<min1<<" "<<min2<<" "<<denom1<<" "<<denom2<<endl;
     cout<<endl<<endl;
     int m_train=train_data[0].second.size();
     int m_test=test_data[0].second.size();
@@ -180,20 +179,52 @@ int main()
         // cout<<endl<<endl;
     }
     cout<<X_test.size()<<endl;
-    // for(int i=0;i<=n;i++)
-    // {
-    //     for(int j=0;j<m;j++)
-    //     {
-    //         temp1(i)=train_data[i].second[j];
-    //         cout<<temp1(i)<<" ";
-    //     }
-    // }
-    NeuralNetwork NN({ n,30,25,20,15,12,10,7,5,3,1});
-    int num_epochs=6;
+    NeuralNetwork NN({ n,30,28,25,22,20,16,12,10,7,5,3,1});
+    int num_epochs=10;
     NN.train(X_train,Y_train,X_test,Y_test,num_epochs);
     cout<<m_train<<" "<<m_test<<endl;
+    vector<RowVector> train_prediction=NN.train_pred;
+    vector<RowVector> test_prediction=NN.test_pred;
+    vector<Scalar> final_train_prediction,final_test_prediction;
+    cout<<endl<<endl;
+    vector<float>vec1,vec2;
+    for(int j=0;j<m;j++)
+    {
+        int t=raw_train_data[0].second[temp[j]];
+        if(j<1500)
+        {
+            vec1.push_back(t);
+            // cout<<t<<" ";
+        }
+        else
+        {
+            vec2.push_back(t);
+        }
+    }
+    min1 = *min_element(vec1.begin(), vec1.end());
+    min2 = *min_element(vec2.begin(), vec2.end());
+    max1 = *max_element(vec1.begin(), vec1.end());
+    max2 = *max_element(vec2.begin(), vec2.end());
+    denom1=max1-min1;
+    denom2=max2-min2;
+    for(int i=0;i<m_train;i++)
+    {
+        float t=train_prediction[i].value();
+        t=t*denom1+min1;
+        final_train_prediction.push_back(t) ;
+        // final_train_prediction.back()=denom1*(final_train_prediction.back())+min1;
+        cout<<i<<" "<<Y_train[i]<<" "<<train_prediction[i]<<"  "<<raw_train_data[0].second[temp[i]]<<"  "<<final_train_prediction.back()<<endl;
+    }
+    for(int i=0;i<m_test;i++)
+    {
+        float t=test_prediction[i].value();
+        t=t*denom2+min2;
+        final_test_prediction.push_back(t) ;
+        // final_test_prediction.back()=denom2*(final_test_prediction.back())+min2;
+        cout<<i<<" "<<Y_test[i]<<" "<<test_prediction[i]<<"  "<<raw_train_data[0].second[temp[i+1500]]<<"  "<<final_test_prediction.back()<<endl;
+    }
     // pair<string, vector<int>> Y_train = train_data[0];
-    
+
     // vector<pair<string, vector<int>>> X_train;
     // int n=train_data.size()-1;
     // for(int i=1;i<=n;i++)

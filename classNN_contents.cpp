@@ -89,7 +89,7 @@ void NeuralNetwork::propagateForward(RowVector &input)
     // unaryExpr applies the given function to all elements of CURRENT_LAYER
     for (int i = 1; i < layer_dims.size() - 1; i++)
     {
-        neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(std::ptr_fun(activationFunction));
+        neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(std::ptr_fun(relu));
     }
 }
 
@@ -122,7 +122,7 @@ void NeuralNetwork::updateWeights()
             {
                 for (int r = 0; r < weights[i]->rows(); r++)
                 {
-                    weights[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * activationFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    weights[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
                 }
             }
         }
@@ -132,7 +132,7 @@ void NeuralNetwork::updateWeights()
             {
                 for (int r = 0; r < weights[i]->rows(); r++)
                 {
-                    weights[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * activationFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    weights[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
                 }
             }
         }
@@ -147,24 +147,17 @@ void NeuralNetwork::propagateBackward(RowVector &output)
 
 void NeuralNetwork::predict(vector<RowVector> &test_input,vector<RowVector> &test_output)
 {
-    // RowVector total_cost,avg_cost;
-    // RowVector* AL=neuronLayers.back();
     RowVector total_cost(1);
     total_cost.setZero();
     for(int i=0;i<test_input.size();i++)
     {
         cout<<"Input "<<i<<endl;
         propagateForward(test_input[i]);
+        test_pred.push_back(*neuronLayers.back());
         std::cout << "   Expected      " <<"Output  " << std::endl;
         std::cout << "  "<<test_output[i] <<"\t" << *neuronLayers.back() << std::endl;
         total_cost=total_cost+ (test_output[i] - (*neuronLayers.back()))*(test_output[i] - (*neuronLayers.back()));
-        // RowVector temp(1);
-        // temp(0)=test_output;
-        // RowVector cost=*neuronLayers.back();
-        // cout<<"cost = "<<cost;
-        // total_cost+=cost;
     }
-    // avg_cost=total_cost/test_input.size();
     cout<<" Total test cost= "<<total_cost<<"  Avg test cost="<<total_cost/test_input.size()<<endl<<endl;
 }
 void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &output_data,vector<RowVector> &test_input,vector<RowVector> &test_output,int num_epochs)
@@ -176,13 +169,13 @@ void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &outp
         for (int i = 0; i < input_data.size(); i++)
         {
             // std::cout << "Input "<<i<<"  ";
-
             // " to neural network is : " << input_data[i] << std::endl;
             propagateForward(input_data[i]);
             // std::cout << "Expected output is : " << output_data[i] << std::endl;
             // std::cout << "Output produced is : " << *neuronLayers.back() << std::endl;
+            train_pred.push_back(*neuronLayers.back());
             propagateBackward(output_data[i]);
-            std::cout << "MSE : " << std::sqrt((*deltas.back()).dot((*deltas.back())) / deltas.back()->size()) << std::endl;
+            // std::cout << "MSE : " << std::sqrt((*deltas.back()).dot((*deltas.back())) / deltas.back()->size()) << std::endl;
             total_cost=total_cost+(output_data[i] - (*neuronLayers.back()))*(output_data[i] - (*neuronLayers.back()));
         }
         cout<<endl<<"Epoch no "<<k<<" Total_cost= "<<total_cost<<"  Avg cost="<<total_cost/input_data.size()<<endl<<endl;
