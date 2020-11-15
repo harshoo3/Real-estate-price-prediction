@@ -143,7 +143,7 @@ void rand_shuffle(int m, int *temp) //function to randomly shuffle the data from
 int main()
 {
     // read the csv file
-    vector<pair<string, vector<float>>> raw_train_data = read_csv("analytical_base_table.csv"), test_data, train_data;
+    vector<pair<string, vector<float>>> raw_train_data = read_csv("Real-Estate\\Files\\analytical_base_table.csv"), test_data, train_data;
 
     //  n is the number of factors ... m is the number of examples in the data
     int n = raw_train_data.size() - 1;
@@ -243,8 +243,8 @@ int main()
     final_train_prediction.push_back(make_pair("Prediction",save_vec1));
     final_test_prediction.push_back(make_pair("Prediction",save_vec2));
 
-    write_csv("train_prediction.csv",final_train_prediction);
-    write_csv("test_prediction.csv",final_test_prediction);
+    write_csv("predictions\\train_prediction.csv",final_train_prediction);
+    write_csv("predictions\\test_prediction.csv",final_test_prediction);
 
     train_epoch_cost.push_back(make_pair("Total train cost variation",NN.train_total_cost));
     train_epoch_cost.push_back(make_pair("Avg train cost variation",NN.train_avg_cost));
@@ -252,8 +252,8 @@ int main()
     test_cost.push_back(make_pair("Total test cost",NN.test_total_cost));
     test_cost.push_back(make_pair("Avg test cost",NN.test_avg_cost));
 
-    write_csv("train_epoch_cost.csv",train_epoch_cost);
-    write_csv("test_cost.csv",test_cost);
+    write_csv("predictions\\train_epoch_cost.csv",train_epoch_cost);
+    write_csv("predictions\\test_cost.csv",test_cost);
 
     return 0;
 }
