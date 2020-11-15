@@ -2,12 +2,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long int
-enum class CSVState
-{
-    UnquotedField,
-    QuotedField,
-    QuotedQuote
-};
 
 vector<pair<string, vector<float>>> read_csv(std::string filename)
 {
