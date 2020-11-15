@@ -1,4 +1,5 @@
 #include <C:\Users\harsh\Downloads\oopsproject\Eigen3\Eigen\Eigen\Dense>
+//please set this path accordingly
 #include "classNN.hpp"
 #include <iostream>
 #include <vector>
@@ -153,12 +154,12 @@ void NeuralNetwork::predict(vector<RowVector> &test_input,vector<RowVector> &tes
     {
         forward_prop(test_input[i]);
         test_pred.push_back(neuronLayers.back()->value());
-        cout <<"  "<<i<< "   Expected      " <<"Output  " << endl;
-        cout <<"  "<<test_output[i] <<"\t" << *neuronLayers.back() << endl;
+        // cout <<"  "<<i<< "   Expected      " <<"Output  " << endl;
+        // cout <<"  "<<test_output[i] <<"\t" << *neuronLayers.back() << endl;
         total_cost=total_cost+ (test_output[i] - (*neuronLayers.back()))*(test_output[i] - (*neuronLayers.back()));
     }
     // The average cost calculated is of Mean Squared Error(MSE) form
-    cout<<" Total test cost= "<<total_cost<<"  Avg test cost="<<total_cost/test_input.size()<<endl<<endl;
+    cout<<endl<<" Total test cost= "<<total_cost<<"  Avg test cost="<<total_cost/test_input.size()<<endl<<endl;
     test_total_cost.push_back(total_cost.value());
     test_avg_cost.push_back(total_cost.value()/test_input.size());
 }
@@ -190,5 +191,6 @@ void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &outp
         train_avg_cost.push_back(total_cost.value()/input_data.size());
     }
     predict(test_input,test_output);
+
 }
 

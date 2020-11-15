@@ -1,4 +1,6 @@
 #include <C:\Users\harsh\Downloads\oopsproject\Eigen3\Eigen\Eigen\Dense> 
+//please set this path accordingly
+
 #include <iostream> 
 #include <vector> 
 
@@ -36,8 +38,8 @@ public:
     vector<RowVector*> deltas; // stores the error contribution of each neurons 
     vector<Matrix*> parameters; // the connection weights itself 
     vector<float> train_pred,test_pred; // stores our prediction
-    vector<float> train_total_cost,train_avg_cost ;
-    vector<float> test_total_cost,test_avg_cost ;
+    vector<float> train_total_cost,train_avg_cost ; //stores our total and average training costs
+    vector<float> test_total_cost,test_avg_cost ; //stores our total and average test costs
     vector<int> layer_dims; // dimensions of our Neural network
     float learningRate; 
     int num_epochs;

@@ -1,4 +1,6 @@
 #include "C:\Users\harsh\Downloads\oopsproject\classNN_contents.cpp"
+//please set this path accordingly
+
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long int
@@ -44,7 +46,7 @@ vector<pair<string, vector<float>>> read_csv(std::string filename)
     while (getline(myFile, line))
     {
         // Create a stringstream of the current line
-        std::stringstream ss(line);
+        stringstream ss(line);
 
         // Keep track of the current column index
         int colIdx = 0;
@@ -220,9 +222,9 @@ int main()
         X_test.push_back(temp1);
     }
 
-    // creating an object of class Neurel Network 
+    // creating an object of class Neurall Network 
     //setting the 3 hyperparameters : layer_dims , learningRate and Number of epochs
-    NeuralNetwork NN({n, 30, 28, 25, 22, 20, 16, 12, 10, 7, 5, 3, 1}, 0.2 , 50 );
+    NeuralNetwork NN({n, 30, 28, 25, 22, 20, 16, 12, 10, 7, 5, 3, 1}, 0.2 , 10 );
 
     // training our model
     NN.train(X_train, Y_train, X_test, Y_test);
@@ -230,13 +232,14 @@ int main()
     //our predictions 
     vector<pair<string,vector<float>>> final_train_prediction, final_test_prediction,train_epoch_cost,test_cost;
 
-    // we need to reverse the max-min normalization
+    // we need to reverse the max-min normalization 
     make_final_pred(final_train_prediction,"Expected",NN.train_pred,save_denom1,save_min1,m_train);
     make_final_pred(final_test_prediction,"Expected",NN.test_pred,save_denom2,save_min2,m_test);
     
     final_train_prediction.push_back(make_pair("Prediction",save_vec1));
     final_test_prediction.push_back(make_pair("Prediction",save_vec2));
 
+    //write the train and test predictions into the csv files
     write_csv("predictions\\train_prediction.csv",final_train_prediction);
     write_csv("predictions\\test_prediction.csv",final_test_prediction);
 
@@ -246,6 +249,7 @@ int main()
     test_cost.push_back(make_pair("Total test cost",NN.test_total_cost));
     test_cost.push_back(make_pair("Avg test cost",NN.test_avg_cost));
 
+    //write the train and test costs into the csv files
     write_csv("predictions\\train_epoch_cost.csv",train_epoch_cost);
     write_csv("predictions\\test_cost.csv",test_cost);
 
