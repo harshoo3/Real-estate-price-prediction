@@ -1,12 +1,5 @@
 #include "C:\Users\harsh\Downloads\oopsproject\classNN_contents.cpp"
-#include<bits/stdc++.h>
-#include <typeinfo>
-#include <string>
-#include <fstream>
-#include <vector>
-#include <utility> // std::pair
-#include <stdexcept> // std::runtime_error
-#include <sstream> // std::stringstream
+#include <bits/stdc++.h>
 using namespace std;
 #define ll long long int
 enum class CSVState
@@ -16,25 +9,27 @@ enum class CSVState
     QuotedQuote
 };
 
-vector<pair<string, vector<float>>> read_csv(std::string filename){
+vector<pair<string, vector<float>>> read_csv(std::string filename)
+{
     // Reads a CSV file into a vector of <string, vector<int>> pairs where
     // each pair represents <column name, column values>
 
     // Create a vector of <string, int vector> pairs to store the result
-    vector<pair<string,vector<float>>> result;
+    vector<pair<string, vector<float>>> result;
 
     // Create an input filestream
-    ifstream myFile ( filename );
+    ifstream myFile(filename);
 
     // Make sure the file is open
-    if(!myFile.is_open()) throw runtime_error("Could not open file");
+    if (!myFile.is_open())
+        throw runtime_error("Could not open file");
 
     // Helper vars
     string line, colname;
     float val;
 
     // Read the column names
-    if(myFile.good())
+    if (myFile.good())
     {
         // Extract the first line in the file
         getline(myFile, line);
@@ -43,31 +38,34 @@ vector<pair<string, vector<float>>> read_csv(std::string filename){
         stringstream ss(line);
 
         // Extract each column name
-        while(getline(ss, colname, ',')){
-            
+        while (getline(ss, colname, ','))
+        {
+
             // Initialize and add <colname, int vector> pairs to result
-            result.push_back({colname, vector<float> {}});
+            result.push_back({colname, vector<float>{}});
         }
     }
 
     // Read data, line by line
-    while(getline(myFile, line))
+    while (getline(myFile, line))
     {
         // Create a stringstream of the current line
         std::stringstream ss(line);
-        
+
         // Keep track of the current column index
         int colIdx = 0;
-        
+
         // Extract each integer
-        while(ss >> val){
-            
+        while (ss >> val)
+        {
+
             // Add the current integer to the 'colIdx' column's values vector
             result.at(colIdx).second.push_back(val);
-            
+
             // If the next token is a comma, ignore it and move on
-            if(ss.peek() == ',') ss.ignore();
-            
+            if (ss.peek() == ',')
+                ss.ignore();
+
             // Increment the column index
             colIdx++;
         }
@@ -79,196 +77,183 @@ vector<pair<string, vector<float>>> read_csv(std::string filename){
     return result;
 }
 
-void rand_shuffle(int m,int *temp)
-{
-    for(int i=0;i<m;i++)
+void write_csv(string filename, vector<pair<string,vector<float>>> dataset){
+    // Make a CSV file with one or more columns of integer values
+    // Each column of data is represented by the pair <column name, column data>
+    //   as std::pair<std::string, std::vector<int>>
+    // The dataset is represented as a vector of these columns
+    // Note that all columns should be the same size
+    
+    // Create an output filestream object
+    ofstream myFile(filename);
+    
+    // Send column names to the stream
+    for(int j = 0; j < dataset.size(); ++j)
     {
-        temp[i]=i;
+        myFile << dataset.at(j).first;
+        if(j != dataset.size() - 1) myFile << ","; // No comma at end of line
     }
-    unsigned seed = 0;
-    shuffle(temp, (temp+m), default_random_engine(seed));
+    myFile << "\n";
+    
+    // Send data to the stream
+    for(int i = 0; i < dataset.at(0).second.size(); ++i)
+    {
+        for(int j = 0; j < dataset.size(); ++j)
+        {
+            myFile << dataset.at(j).second.at(i);
+            if(j != dataset.size() - 1) myFile << ","; // No comma at end of line
+        }
+        myFile << "\n";
+    }
+    
+    // Close the file
+    myFile.close();
 }
 
-typedef vector<RowVector*> data; 
-int main() 
-{ 
-    
-
-    vector<pair<string, vector<float>>> raw_train_data = read_csv("analytical_base_table.csv"),test_data,train_data;
-    int n=raw_train_data.size()-1;
-    int m=raw_train_data[0].second.size();
-    float max1,max2,min1,min2,denom1,denom2;
-    // cout<<raw_train_data[15].second[0];
-    cout<<n<<" "<<m<<endl;
-    int temp[m];
-    rand_shuffle(m,temp);
-    for(int i=0;i<n+1;i++)
+void make_final_pred(vector<pair<string,vector<float>>> &final,string str,vector<float> copy_vec,float denom,float min,int m)
+{
+    vector<float> temp_vec1;
+    for (int i = 0; i < m; i++)
     {
+        temp_vec1.push_back(copy_vec[i]*denom + min); 
+    }
+    final.push_back(make_pair(str,temp_vec1));
+}
 
-        vector<float>vec1,vec2;
-        for(int j=0;j<m;j++)
+float find_min(vector<float>vec) //function to find minimum element in a vector
+{
+    return *min_element(vec.begin(),vec.end());
+}
+float find_max(vector<float>vec) //function to find maximum element in a vector
+{
+    return *max_element(vec.begin(),vec.end());
+}
+
+void rand_shuffle(int m, int *temp) //function to randomly shuffle the data from csv file
+{
+    for (int i = 0; i < m; i++)
+    {
+        temp[i] = i;
+    }
+    unsigned seed = 0;
+    shuffle(temp, (temp + m), default_random_engine(seed));
+}
+
+//Main function starts here
+int main()
+{
+    // read the csv file
+    vector<pair<string, vector<float>>> raw_train_data = read_csv("analytical_base_table.csv"), test_data, train_data;
+
+    //  n is the number of factors ... m is the number of examples in the data
+    int n = raw_train_data.size() - 1;
+    int m = raw_train_data[0].second.size();
+
+    float max1, max2, min1, min2, denom1, denom2,save_min1,save_min2,save_denom1,save_denom2;
+    int m_train = 1500; // setting 1500 examples for training and the rest as test data
+    int temp[m];
+    rand_shuffle(m, temp); //shuffling indexes from 0 to m-1
+    vector<float> save_vec1,save_vec2;
+    for (int i = 0; i < n + 1; i++)
+    {
+        vector<float> vec1, vec2;
+        for (int j = 0; j < m; j++)
         {
-            int t=raw_train_data[i].second[temp[j]];
-            if(j<1500)
+            int t = raw_train_data[i].second[temp[j]];
+            if (j < m_train)
             {
                 vec1.push_back(t);
-                // cout<<t<<" ";
             }
             else
             {
                 vec2.push_back(t);
             }
         }
-        min1 = *min_element(vec1.begin(), vec1.end());
-        min2 = *min_element(vec2.begin(), vec2.end());
-        max1 = *max_element(vec1.begin(), vec1.end());
-        max2 = *max_element(vec2.begin(), vec2.end());
-        denom1=max1-min1;
-        denom2=max2-min2;
-        for(int j=0;j<m;j++)
+        // calculating minimum and maximum elements for both train and test data for max-min normalisation
+        min1 = find_min(vec1);
+        min2 = find_min(vec2);
+        max1 = find_max(vec1);
+        max2 = find_max(vec2);
+        denom1 = max1 - min1;
+        denom2 = max2 - min2;
+        if(i==0)
         {
-            if(j<1500)
+            save_min1=min1 ;  save_min2=min2 ;  save_denom1=denom1 ; save_denom2 = denom2 ; save_vec1 = vec1 ; save_vec2 = vec2;
+        }
+        for (int j = 0; j < m; j++)
+        {
+            if (j < m_train)
             {
-                vec1[j]=(vec1[j]-min1)/denom1;
-                // cout<<vec1[j]<<" ";
+                vec1[j] = (vec1[j] - min1) / denom1;
             }
             else
             {
-                vec2[j-1500]=(vec2[j-1500]-min2)/denom2;
-                // cout<<vec2[j-1500]<<" ";
+                vec2[j - m_train] = (vec2[j - m_train] - min2) / denom2;
             }
         }
-        train_data.push_back(make_pair(raw_train_data[i].first,vec1));
-        test_data.push_back(make_pair(raw_train_data[i].first,vec2));
-        // cout<<endl<<endl;
+        //  appending train and test data
+        train_data.push_back(make_pair(raw_train_data[i].first, vec1));
+        test_data.push_back(make_pair(raw_train_data[i].first, vec2));
     }
-    cout<<max1<<" "<<max2<<" "<<min1<<" "<<min2<<" "<<denom1<<" "<<denom2<<endl;
-    cout<<endl<<endl;
-    int m_train=train_data[0].second.size();
-    int m_test=test_data[0].second.size();
-    cout<<m_train<<" "<<m_test<<endl;
-    
-    vector<RowVector> X_train,Y_train,X_test,Y_test;
-    for(int j=0;j<m_train;j++)
+    int m_test = test_data[0].second.size();
+
+    vector<RowVector> X_train, Y_train, X_test, Y_test;
+
+    // segregating input and output of training data
+    for (int j = 0; j < m_train; j++)
     {
-        RowVector temp1(n),temp2(1);
-        temp2(0)=train_data[0].second[j];
+        RowVector temp1(n), temp2(1);
+        temp2(0) = train_data[0].second[j];
         Y_train.push_back(temp2);
-        for(int i=1;i<=n;i++)
+
+        for (int i = 1; i <= n; i++)
         {
-            temp1(i-1)=train_data[i].second[j];
-            // cout<<train_data[i].second[j]<<" ";
-            // cout<<temp1(i-1)<<" ";
+            temp1(i - 1) = train_data[i].second[j];
         }
         X_train.push_back(temp1);
-        // cout<<endl<<endl;
     }
-    cout<<X_train.size()<<endl;
-    for(int j=0;j<m_test;j++)
+
+    //segregating input and output of test data
+    for (int j = 0; j < m_test; j++)
     {
-        RowVector temp1(n),temp2(1);
-        temp2(0)=test_data[0].second[j];
+        RowVector temp1(n), temp2(1);
+        temp2(0) = test_data[0].second[j];
         Y_test.push_back(temp2);
-        for(int i=1;i<=n;i++)
+        for (int i = 1; i <= n; i++)
         {
-            temp1(i-1)=test_data[i].second[j];
-            // cout<<train_data[i].second[j]<<" ";
-            // cout<<temp1(i-1)<<" ";
+            temp1(i - 1) = test_data[i].second[j];
         }
         X_test.push_back(temp1);
-        // cout<<endl<<endl;
     }
-    cout<<X_test.size()<<endl;
-    NeuralNetwork NN({ n,30,28,25,22,20,16,12,10,7,5,3,1});
-    int num_epochs=10;
-    NN.train(X_train,Y_train,X_test,Y_test,num_epochs);
-    cout<<m_train<<" "<<m_test<<endl;
-    vector<RowVector> train_prediction=NN.train_pred;
-    vector<RowVector> test_prediction=NN.test_pred;
-    vector<Scalar> final_train_prediction,final_test_prediction;
-    cout<<endl<<endl;
-    vector<float>vec1,vec2;
-    for(int j=0;j<m;j++)
-    {
-        int t=raw_train_data[0].second[temp[j]];
-        if(j<1500)
-        {
-            vec1.push_back(t);
-            // cout<<t<<" ";
-        }
-        else
-        {
-            vec2.push_back(t);
-        }
-    }
-    min1 = *min_element(vec1.begin(), vec1.end());
-    min2 = *min_element(vec2.begin(), vec2.end());
-    max1 = *max_element(vec1.begin(), vec1.end());
-    max2 = *max_element(vec2.begin(), vec2.end());
-    denom1=max1-min1;
-    denom2=max2-min2;
-    for(int i=0;i<m_train;i++)
-    {
-        float t=train_prediction[i].value();
-        t=t*denom1+min1;
-        final_train_prediction.push_back(t) ;
-        // final_train_prediction.back()=denom1*(final_train_prediction.back())+min1;
-        cout<<i<<" "<<Y_train[i]<<" "<<train_prediction[i]<<"  "<<raw_train_data[0].second[temp[i]]<<"  "<<final_train_prediction.back()<<endl;
-    }
-    for(int i=0;i<m_test;i++)
-    {
-        float t=test_prediction[i].value();
-        t=t*denom2+min2;
-        final_test_prediction.push_back(t) ;
-        // final_test_prediction.back()=denom2*(final_test_prediction.back())+min2;
-        cout<<i<<" "<<Y_test[i]<<" "<<test_prediction[i]<<"  "<<raw_train_data[0].second[temp[i+1500]]<<"  "<<final_test_prediction.back()<<endl;
-    }
-    // pair<string, vector<int>> Y_train = train_data[0];
 
-    // vector<pair<string, vector<int>>> X_train;
-    // int n=train_data.size()-1;
-    // for(int i=1;i<=n;i++)
-    // {
-    //     X_train.push_back(train_data[i]);
-    // }
-    // int m=X_train[0].second.size();
-    // // for(int i=0;i<n;i++)
-    // {
-    //     for(int j= 0; j<m;j++)
-    //     {
-    //         cout<<X_train[i].second[j]<<" ";
-    //     }
-    //     cout<<endl<<endl<<endl;
-    // }
-    // int temp_arr[m];
-    // for(int i=0;i<m;i++)
-    // {
-    //     temp_arr[i]=i;
-    // }
-    // unsigned seed = 0;
-    // shuffle(temp_arr.begin(), temp_arr.end(), default_random_engine(seed));
+    // creating an object of class Neurel Network 
+    //setting the 3 hyperparameters : layer_dims , learningRate and Number of epochs
+    NeuralNetwork NN({n, 30, 28, 25, 22, 20, 16, 12, 10, 7, 5, 3, 1}, 0.2 , 50 );
+
+    // training our model
+    NN.train(X_train, Y_train, X_test, Y_test);
+
+    //our predictions 
+    vector<pair<string,vector<float>>> final_train_prediction, final_test_prediction,train_epoch_cost,test_cost;
+
+    // we need to reverse the max-min normalization
+    make_final_pred(final_train_prediction,"Expected",NN.train_pred,save_denom1,save_min1,m_train);
+    make_final_pred(final_test_prediction,"Expected",NN.test_pred,save_denom2,save_min2,m_test);
     
-    // Matrix X_train_mat(m,n);
-    // for(int i=0;i<n;i++)
-    // {
-    //     for(int j= 0; j<m;j++)
-    //     {
-    //         X_train_mat(j,i)=X_train[i].second[j];
-    //         cout<<X_train_mat(j,i)<<" ";
-    //     }
-    //     cout<<endl<<endl<<endl;
-    // }
-    // cout<<X_train_mat.rows()<<" "<<X_train_mat.cols()<<endl;
-    // cout<<n<<" "<<m<<endl;
+    final_train_prediction.push_back(make_pair("Prediction",save_vec1));
+    final_test_prediction.push_back(make_pair("Prediction",save_vec2));
 
+    write_csv("train_prediction.csv",final_train_prediction);
+    write_csv("test_prediction.csv",final_test_prediction);
 
-    // Matrix Y_train_mat(m,1);
-    // for(int i=0;i<m;i++)
-    // {
-    //     Y_train_mat(i,0)=Y_train.second[i];
-    //     cout<<Y_train_mat(i,0)<<" ";
-    // }
-    // cout<<Y_train_mat.rows()<<" "<<Y_train_mat.cols()<<endl;
-    // NN.train(&X_train,&Y_train);
-    return 0; 
-} 
+    train_epoch_cost.push_back(make_pair("Total train cost variation",NN.train_total_cost));
+    train_epoch_cost.push_back(make_pair("Avg train cost variation",NN.train_avg_cost));
+
+    test_cost.push_back(make_pair("Total test cost",NN.test_total_cost));
+    test_cost.push_back(make_pair("Avg test cost",NN.test_avg_cost));
+
+    write_csv("train_epoch_cost.csv",train_epoch_cost);
+    write_csv("test_cost.csv",test_cost);
+
+    return 0;
+}

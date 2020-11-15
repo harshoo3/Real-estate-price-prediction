@@ -4,8 +4,6 @@
 
 using namespace std;
   
-#define uint unsigned long int
-typedef float Scalar; 
 typedef Eigen::MatrixXf Matrix; 
 typedef Eigen::RowVectorXf RowVector; 
 typedef Eigen::VectorXf ColVector; 
@@ -13,37 +11,34 @@ typedef Eigen::VectorXf ColVector;
 class NeuralNetwork { 
 public: 
     // constructor
-    NeuralNetwork(vector<int> layer_dims, Scalar learningRate = Scalar(0.1)); 
+    NeuralNetwork(vector<int> layer_dims, float learningRate, int num_epochs); 
   
     // function for forward propagation of data 
-    void propagateForward(RowVector& input); 
+    void forward_prop(RowVector& input); 
   
     // function for backward propagation of errors made by neurons 
-    void propagateBackward(RowVector& output); 
+    void back_prop(RowVector& output); 
   
     // function to calculate errors made by neurons in each layer 
-    void calcErrors(RowVector& output); 
+    void errors_calculation(RowVector& output); 
   
     // function to update the weights of connections 
-    void updateWeights(); 
+    void update_parameters(); 
   
     // function to train the neural network give an array of data points 
-    void train(vector<RowVector> &input_data,vector<RowVector> &output_data,vector<RowVector> &test_input,vector<RowVector> &test_output,int num_epochs); 
+    void train(vector<RowVector> &input_data,vector<RowVector> &output_data,vector<RowVector> &test_input,vector<RowVector> &test_output); 
   
-    void predict(vector<RowVector> &test_input,vector<RowVector> &test_output);
-    // storage objects for working of neural network 
-    /* 
-          use pointers when using std::vector<Class> as std::vector<Class> calls destructor of  
-          Class as soon as it is pushed back! when we use pointers it can't do that, besides 
-          it also makes our neural network class less heavy!! It would be nice if you can use 
-          smart pointers instead of usual ones like this 
-        */
+    // function to make predictions on our test set
+    void predict(vector<RowVector> &test_input,vector<RowVector> &test_output); 
+    
     vector<RowVector*> neuronLayers; // stores the different layers of out network 
-    vector<RowVector> train_pred,test_pred;
     vector<RowVector*> cacheLayers; // stores the unactivated (activation fn not yet applied) values of layers 
     vector<RowVector*> deltas; // stores the error contribution of each neurons 
-    vector<Matrix*> weights; // the connection weights itself 
-    vector<int> layer_dims;
-    Scalar learningRate; 
-    // vector<RowVector>train_costs,test_costs;
+    vector<Matrix*> parameters; // the connection weights itself 
+    vector<float> train_pred,test_pred; // stores our prediction
+    vector<float> train_total_cost,train_avg_cost ;
+    vector<float> test_total_cost,test_avg_cost ;
+    vector<int> layer_dims; // dimensions of our Neural network
+    float learningRate; 
+    int num_epochs;
 }; 

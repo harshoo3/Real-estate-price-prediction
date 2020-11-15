@@ -78,6 +78,10 @@
         "cuchar": "cpp",
         "forward_list": "cpp",
         "unordered_set": "cpp",
-        "scoped_allocator": "cpp"
+        "scoped_allocator": "cpp",
+        "*.traits": "cpp",
+        "alignedvector3": "cpp",
+        "fft": "cpp",
+        "openglsupport": "cpp"
     }
 }
