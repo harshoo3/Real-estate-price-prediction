@@ -13,7 +13,7 @@ typedef Eigen::VectorXf ColVector;
 class NeuralNetwork { 
 public: 
     // constructor
-    NeuralNetwork(vector<int> layer_dims, float learningRate, int num_epochs); 
+    NeuralNetwork(vector<int> layer_dims, float learningRate, int num_epochs,string activation_func); 
   
     // function for forward propagation of data 
     void forward_prop(RowVector& input); 
@@ -41,6 +41,7 @@ public:
     vector<float> train_total_cost,train_avg_cost ; //stores our total and average training costs
     vector<float> test_total_cost,test_avg_cost ; //stores our total and average test costs
     vector<int> layer_dims; // dimensions of our Neural network
-    float learningRate; 
-    int num_epochs;
+    float learningRate; //the learning rate of our Stochastic gradient descent algorithm
+    int num_epochs;//Number of epochs(iterations)
+    string activation_func; // set the activation function "relu" or "tanh"
 }; 

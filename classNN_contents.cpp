@@ -19,17 +19,18 @@ float tanhFunctionDerivative(float x)
 }
 float relu(float x)
 {
-    return x>0? x:0;
+    return x > 0 ? x : 0;
 }
 float reluDerivative(float x)
 {
-    return x>0?1:0;
+    return x > 0 ? 1 : 0;
 }
-NeuralNetwork::NeuralNetwork(std::vector<int> layer_dims, float learningRate, int num_epochs)
+NeuralNetwork::NeuralNetwork(std::vector<int> layer_dims, float learningRate, int num_epochs, string activation_func)
 {
     this->layer_dims = layer_dims;
     this->learningRate = learningRate;
     this->num_epochs = num_epochs;
+    this->activation_func = activation_func;
     for (int i = 0; i < layer_dims.size(); i++)
     {
         // initialze neuron layers
@@ -51,7 +52,7 @@ NeuralNetwork::NeuralNetwork(std::vector<int> layer_dims, float learningRate, in
             cacheLayers.back()->coeffRef(layer_dims[i]) = 1.0;
         }
 
-        // initialze weights matrix
+        // initialze the parameters matrix
         if (i > 0)
         {
             if (i != layer_dims.size() - 1)
@@ -66,7 +67,15 @@ NeuralNetwork::NeuralNetwork(std::vector<int> layer_dims, float learningRate, in
                 parameters.push_back(new Matrix(layer_dims[i - 1] + 1, layer_dims[i]));
                 parameters.back()->setRandom();
             }
-            *parameters.back()=*parameters.back()*(sqrt(2/float(layer_dims[i])));
+            // Xavier initiazation below
+            if(activation_func=="relu")
+            {
+                *parameters.back() = *parameters.back() * (sqrt(2 / float(layer_dims[i-1])));
+            }
+            if(activation_func=="tanh")
+            {
+                *parameters.back() = *parameters.back() * (sqrt(1 / float(layer_dims[i-1])));
+            }
         }
     }
 };
@@ -89,7 +98,14 @@ void NeuralNetwork::forward_prop(RowVector &input)
     // unaryExpr applies the given function to all elements of CURRENT_LAYER
     for (int i = 1; i < layer_dims.size() - 1; i++)
     {
-        neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(std::ptr_fun(tanhFunction));
+        if (activation_func == "tanh")
+        {
+            neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(ptr_fun(tanhFunction));
+        }
+        else if (activation_func == "relu")
+        {
+            neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(ptr_fun(relu));
+        }
     }
 }
 
@@ -97,7 +113,7 @@ void NeuralNetwork::errors_calculation(RowVector &output)
 {
     // calculate the errors made by neurons of last layer
     (*deltas.back()) = output - (*neuronLayers.back());
-    
+
     // error calculation of hidden layers is different
     // we will begin by the last hidden layer
     // and we will continue till the first hidden layer
@@ -121,7 +137,14 @@ void NeuralNetwork::update_parameters()
             {
                 for (int r = 0; r < parameters[i]->rows(); r++)
                 {
-                    parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    if (activation_func == "tanh")
+                    {
+                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    }
+                    else if (activation_func == "relu")
+                    {
+                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    }
                 }
             }
         }
@@ -131,14 +154,21 @@ void NeuralNetwork::update_parameters()
             {
                 for (int r = 0; r < parameters[i]->rows(); r++)
                 {
-                    parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    if (activation_func == "tanh")
+                    {
+                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    }
+                    else if (activation_func == "relu")
+                    {
+                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                    }
                 }
             }
         }
     }
 }
 
-// function for Backpropagation 
+// function for Backpropagation
 void NeuralNetwork::back_prop(RowVector &output)
 {
     errors_calculation(output);
@@ -146,29 +176,32 @@ void NeuralNetwork::back_prop(RowVector &output)
 }
 
 // function to make predictions on our test set
-void NeuralNetwork::predict(vector<RowVector> &test_input,vector<RowVector> &test_output)
+void NeuralNetwork::predict(vector<RowVector> &test_input, vector<RowVector> &test_output)
 {
     RowVector total_cost(1);
     total_cost.setZero();
-    for(int i=0;i<test_input.size();i++)
+    for (int i = 0; i < test_input.size(); i++)
     {
         forward_prop(test_input[i]);
         test_pred.push_back(neuronLayers.back()->value());
         // cout <<"  "<<i<< "   Expected      " <<"Output  " << endl;
         // cout <<"  "<<test_output[i] <<"\t" << *neuronLayers.back() << endl;
-        total_cost=total_cost+ (test_output[i] - (*neuronLayers.back()))*(test_output[i] - (*neuronLayers.back()));
+        total_cost = total_cost + (test_output[i] - (*neuronLayers.back())) * (test_output[i] - (*neuronLayers.back()));
     }
-    // The average cost calculated is of Mean Squared Error(MSE) form
-    cout<<endl<<" Total test cost= "<<total_cost<<"  Avg test cost="<<total_cost/test_input.size()<<endl<<endl;
+    // The average cost calculated is of Mean Squared Error(MSE) form 
+    // The total cost calculated is of Squared Error(SE) form
+    cout << endl
+         << " Total test cost= " << total_cost << "  Avg test cost=" << total_cost / test_input.size() << endl
+         << endl;
     test_total_cost.push_back(total_cost.value());
-    test_avg_cost.push_back(total_cost.value()/test_input.size());
+    test_avg_cost.push_back(total_cost.value() / test_input.size());
 }
 
-// function to train our model using Stochastic Gradient descent 
+// function to train our model using Stochastic Gradient descent
 // un-comment the following output lines to watch how the model is behaving and learning through each example
-void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &output_data,vector<RowVector> &test_input,vector<RowVector> &test_output)
+void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &output_data, vector<RowVector> &test_input, vector<RowVector> &test_output)
 {
-    for(int k=0;k< num_epochs;k++)
+    for (int k = 0; k < num_epochs; k++)
     {
         RowVector total_cost(1);
         total_cost.setZero();
@@ -182,15 +215,15 @@ void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &outp
             train_pred.push_back(neuronLayers.back()->value());
             back_prop(output_data[i]);
             // cout << "MSE : " << std::sqrt((*deltas.back()).dot((*deltas.back())) / deltas.back()->size()) << endl;
-            total_cost=total_cost+(output_data[i] - (*neuronLayers.back()))*(output_data[i] - (*neuronLayers.back()));
+            total_cost = total_cost + (output_data[i] - (*neuronLayers.back())) * (output_data[i] - (*neuronLayers.back()));
         }
+        // The total cost calculated is of Squared Error(SE) form
         // The average cost calculated is of Mean Squared Error(MSE) form
-        cout<<endl<<"Epoch no "<<k<<" Total_cost= "<<total_cost<<"  Avg cost="<<total_cost/input_data.size()<<endl;
+        cout << endl
+             << "Epoch no " << k << " Total_cost= " << total_cost << "  Avg cost=" << total_cost / input_data.size() << endl;
 
         train_total_cost.push_back(total_cost.value());
-        train_avg_cost.push_back(total_cost.value()/input_data.size());
+        train_avg_cost.push_back(total_cost.value() / input_data.size());
     }
-    predict(test_input,test_output);
-
+    predict(test_input, test_output);
 }
-
