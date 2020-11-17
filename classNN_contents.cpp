@@ -92,6 +92,7 @@ void NeuralNetwork::forward_prop(RowVector &input)
     {
         // already explained above
         (*neuronLayers[i]) = (*neuronLayers[i - 1]) * (*parameters[i - 1]);
+        (*cacheLayers[i])=(*neuronLayers[i]);
     }
 
     // apply the activation function to your network
@@ -112,7 +113,7 @@ void NeuralNetwork::forward_prop(RowVector &input)
 void NeuralNetwork::errors_calculation(RowVector &output)
 {
     // calculate the errors made by neurons of last layer
-    (*deltas.back()) = output - (*neuronLayers.back());
+    (*deltas.back()) = (*neuronLayers.back())-output;
 
     // error calculation of hidden layers is different
     // we will begin by the last hidden layer
@@ -139,28 +140,28 @@ void NeuralNetwork::update_parameters()
                 {
                     if (activation_func == "tanh")
                     {
-                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
                     }
                     else if (activation_func == "relu")
                     {
-                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
                     }
                 }
             }
         }
         else
         {
-            for (int c = 0; c < parameters[i]->cols(); c++)
+            for (int c = 0; c < parameters[i]->cols()-1; c++)
             {
                 for (int r = 0; r < parameters[i]->rows(); r++)
                 {
                     if (activation_func == "tanh")
                     {
-                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
                     }
                     else if (activation_func == "relu")
                     {
-                        parameters[i]->coeffRef(r, c) += learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
                     }
                 }
             }
