@@ -9,13 +9,13 @@ The neural network is trained on a Real estate data and it further makes predict
 
 Examples(90-100)       |  Examples(170-180)
 :-------------------------:|:-------------------------:
-<img src="./plots/test-90-100.png" width="300" height="200">  |  <img src="./plots/test-170-180.png" width="300" height="200">
+<img src="./plots/test-90-100.png" width="450" height="300">  |  <img src="./plots/test-170-180.png" width="450" height="300">
 
 Plotting the training cost on using <b>relu</b> and <b>tanh</b>   activation functions against number of epochs.
-<img src="./plots/relu_vs_tanh.png" height="200" width="350">
+<img src="./plots/relu_vs_tanh.png" height="300" width="500">
 
 Plotting average train and cross validation costs against number of epochs using relu activation function.
-<img src="./plots/avg_test_vs_train.png" height="200" width="350">
+<img src="./plots/avg_test_vs_train.png" height="300" width="500">
 
 ## Dataset used
 
