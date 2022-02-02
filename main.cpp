@@ -142,9 +142,9 @@ void rand_shuffle(int m, int *temp) //function to randomly shuffle the data from
 int main()
 {
     // read the csv file
-    vector<pair<string, vector<float>>> raw_train_data = read_csv("Real-Estate\\Files\\analytical_base_table.csv"), test_data, train_data;
+    vector<pair<string, vector<float>>> raw_train_data = read_csv("data\\Files\\analytical_base_table.csv"), test_data, train_data;
 
-    //  n is the number of features ... m is the number of examples in the data
+    //  n is the number of features ... m is the number of examples in the ata
     int n = raw_train_data.size() - 1;
     int m = raw_train_data[0].second.size();
 
