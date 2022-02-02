@@ -1,11 +1,16 @@
-#include "C:\Users\harsh\Downloads\oopsproject\classNN_contents.cpp"
+#include "D:\Real-estate-price-prediction-master\Real-estate-price-prediction-master\classNN_contents.cpp"
 //please set this path accordingly
 
-#include <bits/stdc++.h>
+#include <iostream>
+#include<string>
+#include <fstream>
+#include <random>
+// #include<bits
+
 using namespace std;
 #define ll long long int
 
-vector<pair<string, vector<float>>> read_csv(std::string filename)
+vector<pair<string, vector<float>>> read_csv(string filename)
 {
     // Reads a CSV file into a vector of <string, vector<int>> pairs where
     // each pair represents <column name, column values>
@@ -36,7 +41,6 @@ vector<pair<string, vector<float>>> read_csv(std::string filename)
         // Extract each column name
         while (getline(ss, colname, ','))
         {
-
             // Initialize and add <colname, int vector> pairs to result
             result.push_back({colname, vector<float>{}});
         }
@@ -51,13 +55,12 @@ vector<pair<string, vector<float>>> read_csv(std::string filename)
         // Keep track of the current column index
         int colIdx = 0;
 
-        // Extract each integer
+        // Extract each float
         while (ss >> val)
         {
-
-            // Add the current integer to the 'colIdx' column's values vector
+            // Add the current float to the 'colIdx' column's values vector
             result.at(colIdx).second.push_back(val);
-
+            
             // If the next token is a comma, ignore it and move on
             if (ss.peek() == ',')
                 ss.ignore();
@@ -66,7 +69,7 @@ vector<pair<string, vector<float>>> read_csv(std::string filename)
             colIdx++;
         }
     }
-
+    
     // Close file
     myFile.close();
 
@@ -141,7 +144,7 @@ int main()
     // read the csv file
     vector<pair<string, vector<float>>> raw_train_data = read_csv("Real-Estate\\Files\\analytical_base_table.csv"), test_data, train_data;
 
-    //  n is the number of factors ... m is the number of examples in the data
+    //  n is the number of features ... m is the number of examples in the data
     int n = raw_train_data.size() - 1;
     int m = raw_train_data[0].second.size();
 
@@ -229,7 +232,7 @@ int main()
     // training our model
     NN.train(X_train, Y_train, X_test, Y_test);
 
-    //our predictions 
+    // //our predictions 
     vector<pair<string,vector<float>>> final_train_prediction, final_test_prediction,train_epoch_cost,test_cost;
 
     final_train_prediction.push_back(make_pair("Expected",save_vec1));

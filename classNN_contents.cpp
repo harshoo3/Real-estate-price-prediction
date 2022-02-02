@@ -1,4 +1,4 @@
-#include <C:\Users\harsh\Downloads\oopsproject\Eigen3\Eigen\Eigen\Dense>
+#include <D:\Real-estate-price-prediction-master\Real-estate-price-prediction-master\Eigen3\Eigen\Eigen\Dense>
 //please set this path accordingly
 #include "classNN.hpp"
 #include <iostream>
@@ -35,21 +35,21 @@ NeuralNetwork::NeuralNetwork(std::vector<int> layer_dims, float learningRate, in
     {
         // initialze neuron layers
         if (i == layer_dims.size() - 1)
-            neuronLayers.push_back(new RowVector(layer_dims[i]));
+            neuronLayers.push_back(RowVector(layer_dims[i]));
         else
-            neuronLayers.push_back(new RowVector(layer_dims[i] + 1));
+            neuronLayers.push_back(RowVector(layer_dims[i] + 1));
 
         // initialize cache and delta vectors
-        cacheLayers.push_back(new RowVector(neuronLayers.size()));
-        deltas.push_back(new RowVector(neuronLayers.size()));
+        cacheLayers.push_back(RowVector(neuronLayers.size()));
+        deltas.push_back(RowVector(neuronLayers.size()));
 
         // vector.back() gives the handle to recently added element
         // coeffRef gives the reference of value at that place
         // (using this as we are using pointers here)
         if (i != layer_dims.size() - 1)
         {
-            neuronLayers.back()->coeffRef(layer_dims[i]) = 1.0;
-            cacheLayers.back()->coeffRef(layer_dims[i]) = 1.0;
+            neuronLayers.back().coeffRef(layer_dims[i]) = 1.0;
+            cacheLayers.back().coeffRef(layer_dims[i]) = 1.0;
         }
 
         // initialze the parameters matrix
@@ -79,20 +79,30 @@ NeuralNetwork::NeuralNetwork(std::vector<int> layer_dims, float learningRate, in
         }
     }
 };
-
+NeuralNetwork::~NeuralNetwork()
+{
+    for (auto p : parameters)
+   {
+     delete p;
+   } 
+   parameters.clear();
+   neuronLayers.clear();
+   cacheLayers.clear();
+   deltas.clear();
+}
 void NeuralNetwork::forward_prop(RowVector &input)
 {
     // set the input to input layer
     // block returns a part of the given vector or matrix
     // block takes 4 arguments : startRow, startCol, blockRows, blockCols
-    neuronLayers.front()->block(0, 0, 1, neuronLayers.front()->size() - 1) = input;
+    neuronLayers.front().block(0, 0, 1, neuronLayers.front().size() - 1) = input;
 
     // propagate the data forawrd
     for (int i = 1; i < layer_dims.size(); i++)
     {
         // already explained above
-        (*neuronLayers[i]) = (*neuronLayers[i - 1]) * (*parameters[i - 1]);
-        (*cacheLayers[i])=(*neuronLayers[i]);
+        (neuronLayers[i]) = (neuronLayers[i - 1]) * (*parameters[i - 1]);
+        (cacheLayers[i])=(neuronLayers[i]);
     }
 
     // apply the activation function to your network
@@ -101,11 +111,11 @@ void NeuralNetwork::forward_prop(RowVector &input)
     {
         if (activation_func == "tanh")
         {
-            neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(ptr_fun(tanhFunction));
+            neuronLayers[i].block(0, 0, 1, layer_dims[i]).unaryExpr(ptr_fun(tanhFunction));
         }
         else if (activation_func == "relu")
         {
-            neuronLayers[i]->block(0, 0, 1, layer_dims[i]).unaryExpr(ptr_fun(relu));
+            neuronLayers[i].block(0, 0, 1, layer_dims[i]).unaryExpr(ptr_fun(relu));
         }
     }
 }
@@ -113,14 +123,14 @@ void NeuralNetwork::forward_prop(RowVector &input)
 void NeuralNetwork::errors_calculation(RowVector &output)
 {
     // calculate the errors made by neurons of last layer
-    (*deltas.back()) = (*neuronLayers.back())-output;
+    (deltas.back()) = (neuronLayers.back())-output;
 
     // error calculation of hidden layers is different
     // we will begin by the last hidden layer
     // and we will continue till the first hidden layer
     for (int i = layer_dims.size() - 2; i > 0; i--)
     {
-        (*deltas[i]) = (*deltas[i + 1]) * (parameters[i]->transpose());
+        (deltas[i]) = (deltas[i + 1]) * (parameters[i]->transpose());
     }
 }
 
@@ -140,28 +150,28 @@ void NeuralNetwork::update_parameters()
                 {
                     if (activation_func == "tanh")
                     {
-                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1].coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1].coeffRef(c)) * neuronLayers[i].coeffRef(r);
                     }
                     else if (activation_func == "relu")
                     {
-                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1].coeffRef(c) * reluDerivative(cacheLayers[i + 1].coeffRef(c)) * neuronLayers[i].coeffRef(r);
                     }
                 }
             }
         }
         else
         {
-            for (int c = 0; c < parameters[i]->cols()-1; c++)
+            for (int c = 0; c < parameters[i]->cols(); c++)
             {
                 for (int r = 0; r < parameters[i]->rows(); r++)
                 {
                     if (activation_func == "tanh")
                     {
-                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1].coeffRef(c) * tanhFunctionDerivative(cacheLayers[i + 1].coeffRef(c)) * neuronLayers[i].coeffRef(r);
                     }
                     else if (activation_func == "relu")
                     {
-                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1]->coeffRef(c) * reluDerivative(cacheLayers[i + 1]->coeffRef(c)) * neuronLayers[i]->coeffRef(r);
+                        parameters[i]->coeffRef(r, c) -= learningRate * deltas[i + 1].coeffRef(c) * reluDerivative(cacheLayers[i + 1].coeffRef(c)) * neuronLayers[i].coeffRef(r);
                     }
                 }
             }
@@ -184,10 +194,10 @@ void NeuralNetwork::predict(vector<RowVector> &test_input, vector<RowVector> &te
     for (int i = 0; i < test_input.size(); i++)
     {
         forward_prop(test_input[i]);
-        test_pred.push_back(neuronLayers.back()->value());
+        test_pred.push_back(neuronLayers.back().value());
         // cout <<"  "<<i<< "   Expected      " <<"Output  " << endl;
         // cout <<"  "<<test_output[i] <<"\t" << *neuronLayers.back() << endl;
-        total_cost = total_cost + (test_output[i] - (*neuronLayers.back())) * (test_output[i] - (*neuronLayers.back()));
+        total_cost = total_cost + (test_output[i] - (neuronLayers.back())) * (test_output[i] - (neuronLayers.back()));
     }
     // The average cost calculated is of Mean Squared Error(MSE) form 
     // The total cost calculated is of Squared Error(SE) form
@@ -213,10 +223,10 @@ void NeuralNetwork::train(vector<RowVector> &input_data, vector<RowVector> &outp
             forward_prop(input_data[i]);
             // cout << "Expected output is : " << output_data[i] << endl;
             // cout << "Output produced is : " << *neuronLayers.back() << endl;
-            train_pred.push_back(neuronLayers.back()->value());
+            train_pred.push_back(neuronLayers.back().value());
             back_prop(output_data[i]);
             // cout << "MSE : " << std::sqrt((*deltas.back()).dot((*deltas.back())) / deltas.back()->size()) << endl;
-            total_cost = total_cost + (output_data[i] - (*neuronLayers.back())) * (output_data[i] - (*neuronLayers.back()));
+            total_cost = total_cost + (output_data[i] - (neuronLayers.back())) * (output_data[i] - (neuronLayers.back()));
         }
         // The total cost calculated is of Squared Error(SE) form
         // The average cost calculated is of Mean Squared Error(MSE) form
